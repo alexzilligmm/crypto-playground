@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 def h_mul(row, x):
     assert len(x) == row.shape[0]
-    return sum(w_val * x_val for w_val, x_val in zip(row, x))
+    return sum(x_val* w_val.item() for w_val, x_val in zip(row, x))
 
 def parallel_mul(w, x, layer="Performing mul"):
     assert len(w.shape) == 2
@@ -25,14 +25,14 @@ def h_add(vector, bias):
     assert len(vector) == len(bias)
     new_vector = []
     for v_val, b_val in zip(vector, bias):
-        new_vector.append(v_val + b_val)
+        new_vector.append(v_val + b_val.detach().cpu().numpy().item())
     return new_vector
 
 def h_relu(vector):
     new_vector = []
     
     for x in vector:
-        val = x * x 
+        val = x * 0.5 + 0.5
         new_vector.append(val)
         
     return new_vector
@@ -45,14 +45,14 @@ class PaillerMLP(nn.Module):
     def forward(self, input):
         x = parallel_mul(self.mlp.layer_1.weight, input, layer="Layer 1 Mul")
         x = h_add(x, self.mlp.layer_1.bias)
-        x = h_relu(x)
+        # x = h_relu(x)
 
-        x = parallel_mul(self.mlp.layer_2.weight, x, layer="Layer 2 Mul")
-        x = h_add(x, self.mlp.layer_2.bias)
-        x = h_relu(x)
+        # x = parallel_mul(self.mlp.layer_2.weight, x, layer="Layer 2 Mul")
+        # x = h_add(x, self.mlp.layer_2.bias)
+        # x = h_relu(x)
 
-        x = parallel_mul(self.mlp.layer_3.weight, x, layer="Layer 3 Mul")
-        x = h_add(x, self.mlp.layer_3.bias)
+        # x = parallel_mul(self.mlp.layer_3.weight, x, layer="Layer 3 Mul")
+        # x = h_add(x, self.mlp.layer_3.bias)
         
         return x
     
